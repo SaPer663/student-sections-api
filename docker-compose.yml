@@ -41,10 +41,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - ./app:/code/app
-      - ./alembic:/code/alembic
-      - ./alembic.ini:/code/alembic.ini
+  
     command: >
       sh -c "
         echo 'Waiting for database...' &&
@@ -73,7 +70,7 @@ services:
     networks:
       - app_network
     profiles:
-      - tools  # Запускается только с --profile tools
+      - tools
 
 volumes:
   postgres_data:

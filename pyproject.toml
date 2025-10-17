@@ -1,13 +1,68 @@
 [project]
 name = "student-sections-api"
 version = "0.1.0"
-description = "Add your description here"
+description = "Student Sections Management REST API"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "alembic>=1.17.0",
+    "asyncpg>=0.30.0",
     "fastapi>=0.119.0",
     "passlib[bcrypt]>=1.7.4",
+    "psycopg2-binary>=2.9.11",
     "pydantic>=2.12.2",
     "python-jose>=3.5.0",
     "sqlalchemy>=2.0.44",
+    "uvicorn>=0.37.0",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.3",
+    "pytest-asyncio==0.24.0",
+    "httpx==0.27.2",
+    "black==24.10.0",
+    "ruff==0.7.0",
+    "mypy==1.13.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+line-length = 100
+target-version = ["py313"]
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+]
+ignore = [
+    "E501", # line too long (handled by black)
+    "B008", # do not perform function calls in argument defaults
+]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]

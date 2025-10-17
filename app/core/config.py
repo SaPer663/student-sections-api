@@ -48,7 +48,7 @@ class Database(BaseModel):
     @property
     def database_url_sync(self) -> str:
         """Синхронный URL для Alembic миграций"""
-        return self.DATABASE_URL.replace("+asyncpg", "")
+        return str(self.DATABASE_URL).replace("+asyncpg", "")
 
 
 class Security(BaseModel):
@@ -78,3 +78,6 @@ class Config(BaseModel):
 
 
 settings = Config()
+
+
+print(f'{settings=}')
