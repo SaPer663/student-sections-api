@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -136,22 +136,9 @@ async def get_current_user(
     Raises:
         HTTPException: Если токен невалиден или пользователь не найден
     """
-    try:
-        token = credentials.credentials
-        user = await auth_service.get_current_user(token)
-        return user
-    except UnauthorizedException as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=e.message,
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+
+    token = credentials.credentials
+    return await auth_service.get_current_user(token)
 
 
 async def get_current_active_user(current_user: Annotated[User, Depends(get_current_user)]) -> User:
@@ -168,9 +155,7 @@ async def get_current_active_user(current_user: Annotated[User, Depends(get_curr
         HTTPException: Если пользователь неактивен
     """
     if not current_user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="User account is deactivated"
-        )
+        raise UnauthorizedException(message="User account is deactivated")
     return current_user
 
 
@@ -188,10 +173,7 @@ def require_admin(current_user: Annotated[User, Depends(get_current_active_user)
         HTTPException: Если пользователь не администратор
     """
     if not current_user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only administrators can perform this action",
-        )
+        raise UnauthorizedException(message="Only administrators can perform this action")
     return current_user
 
 

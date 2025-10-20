@@ -39,7 +39,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     async def get_multi(
         self,
-        skip: int = 0,
+        offset: int = 0,
         limit: int = 100,
         filters: dict[str, Any] | None = None,
         sort_by: str = "id",
@@ -49,7 +49,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         Получить список сущностей с фильтрацией, сортировкой и пагинацией.
 
         Args:
-            skip: Количество записей для пропуска (offset)
+            offset: Количество записей для пропуска
             limit: Максимальное количество записей
             filters: Словарь фильтров {field: value}
             sort_by: Поле для сортировки
@@ -69,7 +69,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             sort_column = getattr(self.model, sort_by)
             query = query.order_by(sort_column.desc() if order == "desc" else sort_column.asc())
 
-        query = query.offset(skip).limit(limit)
+        query = query.offset(offset).limit(limit)
 
         result = await self.db.execute(query)
         return result.scalars().all()

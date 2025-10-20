@@ -1,13 +1,12 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
 from app.api.dependency import (
     get_current_active_user,
     get_student_service,
     require_admin,
 )
-from app.core.exceptions import AppException
 from app.models.user import User
 from app.schemas import (
     EnrollmentRequest,
@@ -33,29 +32,27 @@ router = APIRouter()
 async def get_students(
     student_service: Annotated[StudentService, Depends(get_student_service)],
     current_user: Annotated[User, Depends(get_current_active_user)],
-    skip: int = Query(0, ge=0, description="Number of records to skip"),
-    limit: int = Query(10, ge=1, le=100, description="Maximum number of records"),
-    search: str | None = Query(None, description="Search by name or email"),
-    section_id: int | None = Query(None, description="Filter by section ID"),
-    sort_by: str = Query("id", description="Field to sort by"),
-    order: SortOrder = Query(SortOrder.ASC, description="Sort order"),
+    offset: int = Query(0, ge=0, description="Количество записей для пропуска"),
+    limit: int = Query(10, ge=1, le=100, description="Максимальное количество записей"),
+    search: str | None = Query(None, description="Поиск по полям: name or email"),
+    section_id: int | None = Query(None, description="Фильтер по ID секции"),
+    sort_by: str = Query("id", description="Поле для сортировки"),
+    order: SortOrder = Query(SortOrder.ASC, description="Порядок сортировки"),
 ) -> PaginatedResponse[StudentResponse]:
     """
     Получить список студентов.
 
     Доступно всем авторизованным пользователям.
     """
-    try:
-        return await student_service.get_students(
-            skip=skip,
-            limit=limit,
-            search=search,
-            section_id=section_id,
-            sort_by=sort_by,
-            order=order.value,
-        )
-    except AppException as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    return await student_service.get_students(
+        offset=offset,
+        limit=limit,
+        search=search,
+        section_id=section_id,
+        sort_by=sort_by,
+        order=order.value,
+    )
 
 
 @router.get(
@@ -74,10 +71,8 @@ async def get_student(
 
     Доступно всем авторизованным пользователям.
     """
-    try:
-        return await student_service.get_student_detail(student_id)
-    except AppException as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    return await student_service.get_student_detail(student_id)
 
 
 @router.post(
@@ -97,10 +92,8 @@ async def create_student(
 
     Требуется роль ADMIN.
     """
-    try:
-        return await student_service.create_student(student_data)
-    except AppException as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    return await student_service.create_student(student_data)
 
 
 @router.put(
@@ -120,10 +113,8 @@ async def update_student(
 
     Требуется роль ADMIN.
     """
-    try:
-        return await student_service.update_student(student_id, student_data)
-    except AppException as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    return await student_service.update_student(student_id, student_data)
 
 
 @router.delete(
@@ -142,10 +133,8 @@ async def delete_student(
 
     Требуется роль ADMIN.
     """
-    try:
-        await student_service.delete_student(student_id)
-    except AppException as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    await student_service.delete_student(student_id)
 
 
 @router.post(
@@ -167,14 +156,12 @@ async def enroll_student_in_section(
 
     Требуется роль ADMIN.
     """
-    try:
-        return await student_service.enroll_student_in_section(
-            student_id=student_id,
-            section_id=section_id,
-            enrollment_date=enrollment_data.enrollment_date,
-        )
-    except AppException as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    return await student_service.enroll_student_in_section(
+        student_id=student_id,
+        section_id=section_id,
+        enrollment_date=enrollment_data.enrollment_date,
+    )
 
 
 @router.delete(
@@ -194,7 +181,5 @@ async def unenroll_student_from_section(
 
     Требуется роль ADMIN.
     """
-    try:
-        await student_service.unenroll_student_from_section(student_id, section_id)
-    except AppException as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    await student_service.unenroll_student_from_section(student_id, section_id)

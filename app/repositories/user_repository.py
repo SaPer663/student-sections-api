@@ -77,12 +77,12 @@ class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
         )
         return result.scalar_one_or_none()
 
-    async def get_active_users(self, skip: int = 0, limit: int = 100) -> list[User]:
+    async def get_active_users(self, offset: int = 0, limit: int = 100) -> list[User]:
         """
         Получить список активных пользователей.
 
         Args:
-            skip: Количество записей для пропуска
+            offset: Количество записей для пропуска
             limit: Максимальное количество записей
 
         Returns:
@@ -92,7 +92,7 @@ class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
             select(User)
             .where(User.is_active == True)  # noqa: E712
             .options(selectinload(User.role))
-            .offset(skip)
+            .offset(offset)
             .limit(limit)
         )
         return list(result.scalars().all())

@@ -30,8 +30,7 @@ class TimestampMixin:
     """Mixin для добавления временных меток created_at и updated_at"""
 
     created_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.datetime.now(datetime.UTC), nullable=False
+        DateTime(timezone=True), default=lambda: datetime.datetime.now(datetime.UTC), nullable=False
     )
 
     updated_at: Mapped[datetime.datetime] = mapped_column(

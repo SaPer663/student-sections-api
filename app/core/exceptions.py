@@ -31,7 +31,7 @@ class UnauthorizedException(AppException):
     """Исключение для неавторизованных запросов."""
 
     def __init__(self, message: str = "Could not validate credentials") -> None:
-        super().__init__(message, status_code=401)
+        super().__init__(message, status_code=403)
 
 
 class ValidationException(AppException):

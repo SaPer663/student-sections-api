@@ -1,13 +1,8 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
-from app.api.dependency import (
-    get_current_active_user,
-    get_section_service,
-    require_admin,
-)
-from app.core.exceptions import AppException
+from app.api.dependency import get_current_active_user, get_section_service, require_admin
 from app.models.user import User
 from app.schemas import (
     PaginatedResponse,
@@ -31,29 +26,29 @@ router = APIRouter()
 async def get_sections(
     section_service: Annotated[SectionService, Depends(get_section_service)],
     current_user: Annotated[User, Depends(get_current_active_user)],
-    skip: int = Query(0, ge=0, description="Number of records to skip"),
-    limit: int = Query(10, ge=1, le=100, description="Maximum number of records"),
-    search: str | None = Query(None, description="Search by name or description"),
-    available_only: bool = Query(False, description="Show only sections with available spots"),
-    sort_by: str = Query("id", description="Field to sort by"),
-    order: SortOrder = Query(SortOrder.ASC, description="Sort order"),
+    offset: int = Query(0, ge=0, description="Количество записей для пропуска"),
+    limit: int = Query(10, ge=1, le=100, description="Максимальное количество записей"),
+    search: str | None = Query(None, description="Поиск по полям: name or description"),
+    available_only: bool = Query(
+        False, description="Показывать только секции со свободными местами"
+    ),
+    sort_by: str = Query("id", description="Поле для сортировки"),
+    order: SortOrder = Query(SortOrder.ASC, description="Порядок сортировки"),
 ) -> PaginatedResponse[SectionResponse]:
     """
     Получить список секций.
 
     Доступно всем авторизованным пользователям.
     """
-    try:
-        return await section_service.get_sections(
-            skip=skip,
-            limit=limit,
-            search=search,
-            available_only=available_only,
-            sort_by=sort_by,
-            order=order.value,
-        )
-    except AppException as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    return await section_service.get_sections(
+        offset=offset,
+        limit=limit,
+        search=search,
+        available_only=available_only,
+        sort_by=sort_by,
+        order=order.value,
+    )
 
 
 @router.get(
@@ -72,10 +67,8 @@ async def get_section(
 
     Доступно всем авторизованным пользователям.
     """
-    try:
-        return await section_service.get_section_detail(section_id)
-    except AppException as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    return await section_service.get_section_detail(section_id)
 
 
 @router.post(
@@ -95,10 +88,8 @@ async def create_section(
 
     Требуется роль ADMIN.
     """
-    try:
-        return await section_service.create_section(section_data)
-    except AppException as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    return await section_service.create_section(section_data)
 
 
 @router.put(
@@ -118,10 +109,8 @@ async def update_section(
 
     Требуется роль ADMIN.
     """
-    try:
-        return await section_service.update_section(section_id, section_data)
-    except AppException as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    return await section_service.update_section(section_id, section_data)
 
 
 @router.delete(
@@ -141,7 +130,5 @@ async def delete_section(
     Требуется роль ADMIN.
     Секция должна быть пустой (без студентов).
     """
-    try:
-        await section_service.delete_section(section_id)
-    except AppException as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    await section_service.delete_section(section_id)

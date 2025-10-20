@@ -56,7 +56,7 @@ class StudentRepository(BaseRepository[Student, StudentCreate, StudentUpdate]):
     async def search(
         self,
         search_query: str,
-        skip: int = 0,
+        offset: int = 0,
         limit: int = 100,
     ) -> Sequence[Student]:
         """
@@ -64,7 +64,7 @@ class StudentRepository(BaseRepository[Student, StudentCreate, StudentUpdate]):
 
         Args:
             search_query: Поисковый запрос
-            skip: Количество записей для пропуска
+            offset: Количество записей для пропуска
             limit: Максимальное количество записей
 
         Returns:
@@ -81,7 +81,7 @@ class StudentRepository(BaseRepository[Student, StudentCreate, StudentUpdate]):
                     Student.email.ilike(search_pattern),
                 )
             )
-            .offset(skip)
+            .offset(offset)
             .limit(limit)
         )
         return result.scalars().all()
@@ -89,7 +89,7 @@ class StudentRepository(BaseRepository[Student, StudentCreate, StudentUpdate]):
     async def get_by_section(
         self,
         section_id: int,
-        skip: int = 0,
+        offset: int = 0,
         limit: int = 100,
     ) -> Sequence[Student]:
         """
@@ -97,7 +97,7 @@ class StudentRepository(BaseRepository[Student, StudentCreate, StudentUpdate]):
 
         Args:
             section_id: ID секции
-            skip: Количество записей для пропуска
+            offset: Количество записей для пропуска
             limit: Максимальное количество записей
 
         Returns:
@@ -107,7 +107,7 @@ class StudentRepository(BaseRepository[Student, StudentCreate, StudentUpdate]):
             select(Student)
             .join(StudentSection)
             .where(StudentSection.section_id == section_id)
-            .offset(skip)
+            .offset(offset)
             .limit(limit)
         )
         return result.scalars().all()

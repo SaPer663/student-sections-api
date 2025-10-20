@@ -55,7 +55,7 @@ class SectionRepository(BaseRepository[Section, SectionCreate, SectionUpdate]):
     async def search(
         self,
         search_query: str,
-        skip: int = 0,
+        offset: int = 0,
         limit: int = 100,
     ) -> Sequence[Section]:
         """
@@ -63,7 +63,7 @@ class SectionRepository(BaseRepository[Section, SectionCreate, SectionUpdate]):
 
         Args:
             search_query: Поисковый запрос
-            skip: Количество записей для пропуска
+            offset: Количество записей для пропуска
             limit: Максимальное количество записей
 
         Returns:
@@ -79,21 +79,21 @@ class SectionRepository(BaseRepository[Section, SectionCreate, SectionUpdate]):
                     Section.description.ilike(search_pattern),
                 )
             )
-            .offset(skip)
+            .offset(offset)
             .limit(limit)
         )
         return result.scalars().all()
 
     async def get_available_sections(
         self,
-        skip: int = 0,
+        offset: int = 0,
         limit: int = 100,
     ) -> Sequence[Section]:
         """
         Получить секции со свободными местами.
 
         Args:
-            skip: Количество записей для пропуска
+            offset: Количество записей для пропуска
             limit: Максимальное количество записей
 
         Returns:
@@ -117,7 +117,7 @@ class SectionRepository(BaseRepository[Section, SectionCreate, SectionUpdate]):
                     subquery.c.student_count.is_(None),
                 )
             )
-            .offset(skip)
+            .offset(offset)
             .limit(limit)
         )
         return result.scalars().all()

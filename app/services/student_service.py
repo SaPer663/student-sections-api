@@ -102,7 +102,7 @@ class StudentService:
 
     async def get_students(
         self,
-        skip: int = 0,
+        offset: int = 0,
         limit: int = 10,
         search: str | None = None,
         section_id: int | None = None,
@@ -113,7 +113,7 @@ class StudentService:
         Получить список студентов с фильтрацией и пагинацией.
 
         Args:
-            skip: Количество записей для пропуска
+            offset: Количество записей для пропуска
             limit: Максимальное количество записей
             search: Поисковый запрос
             section_id: Фильтр по секции
@@ -125,14 +125,14 @@ class StudentService:
         """
 
         if search:
-            students = await self.student_repo.search(search, skip, limit)
+            students = await self.student_repo.search(search, offset, limit)
             total = await self.student_repo.count_search(search)
         elif section_id:
-            students = await self.student_repo.get_by_section(section_id, skip, limit)
+            students = await self.student_repo.get_by_section(section_id, offset, limit)
             total = await self.section_repo.get_student_count(section_id)
         else:
             students = await self.student_repo.get_multi(
-                skip=skip,
+                offset=offset,
                 limit=limit,
                 sort_by=sort_by,
                 order=order,
@@ -144,7 +144,7 @@ class StudentService:
         return PaginatedResponse(
             items=items,
             total=total,
-            offset=skip,
+            offset=offset,
             limit=limit,
         )
 

@@ -66,7 +66,11 @@ class Database(BaseModel):
 class Security(BaseModel):
     """Настройки безопасности."""
 
-    SECRET_KEY: str = Field(..., min_length=32, description="Secret key for JWT token generation")
+    SECRET_KEY: str = Field(
+        default="XEbS9gOKy8zmomgRURvDZMkBt+EkANAW",
+        min_length=32,
+        description="Сикретный ключ для JWT генерации",
+    )
     ALGORITHM: str = Field(default="HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, ge=1)
 

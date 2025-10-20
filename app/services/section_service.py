@@ -103,7 +103,7 @@ class SectionService:
 
     async def get_sections(
         self,
-        skip: int = 0,
+        offset: int = 0,
         limit: int = 10,
         search: str | None = None,
         available_only: bool = False,
@@ -114,7 +114,7 @@ class SectionService:
         Получить список секций с фильтрацией и пагинацией.
 
         Args:
-            skip: Количество записей для пропуска
+            offset: Количество записей для пропуска
             limit: Максимальное количество записей
             search: Поисковый запрос
             available_only: Показывать только секции со свободными местами
@@ -125,14 +125,14 @@ class SectionService:
             Пагинированный список секций
         """
         if search:
-            sections = await self.section_repo.search(search, skip, limit)
+            sections = await self.section_repo.search(search, offset, limit)
             total = await self.section_repo.count_search(search)
         elif available_only:
-            sections = await self.section_repo.get_available_sections(skip, limit)
+            sections = await self.section_repo.get_available_sections(offset, limit)
             total = await self.section_repo.count_available()
         else:
             sections = await self.section_repo.get_multi(
-                skip=skip,
+                offset=offset,
                 limit=limit,
                 sort_by=sort_by,
                 order=order,
@@ -149,7 +149,7 @@ class SectionService:
         return PaginatedResponse(
             items=items,
             total=total,
-            offset=skip,
+            offset=offset,
             limit=limit,
         )
 

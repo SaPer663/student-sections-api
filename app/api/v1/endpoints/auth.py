@@ -1,13 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
 from app.api.dependency import get_auth_service, get_current_user, require_admin
-from app.core.exceptions import (
-    AlreadyExistsException,
-    AppException,
-    UnauthorizedException,
-)
+from app.core.exceptions import AppException
+from app.core.security import create_access_token
 from app.models.user import User
 from app.schemas import LoginRequest, Token, UserCreate, UserCreateByAdmin, UserResponse
 from app.services.auth_service import AuthService
@@ -40,22 +37,11 @@ async def register(
         Данные созданного пользователя
 
     Raises:
-        HTTPException 409: Если пользователь с таким email уже существует
-        HTTPException 422: Если данные не прошли валидацию
+        AlreadyExistsException 409: Если пользователь с таким email уже существует
+        AppException 422: Если данные не прошли валидацию
     """
-    try:
-        user = await auth_service.register(user_data)
-        return user
-    except AlreadyExistsException as e:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=e.message,
-        )
-    except AppException as e:
-        raise HTTPException(
-            status_code=e.status_code,
-            detail=e.message,
-        )
+
+    return await auth_service.register(user_data)
 
 
 @router.post(
@@ -84,28 +70,12 @@ async def create_user_by_admin(
         Данные созданного пользователя
 
     Raises:
-        HTTPException 403: Если текущий пользователь не администратор
-        HTTPException 409: Если пользователь с таким email уже существует
-        HTTPException 422: Если данные не прошли валидацию
+        UnauthorizedException 403: Если текущий пользователь не администратор
+        AlreadyExistsException 409: Если пользователь с таким email уже существует
+        AppException 422: Если данные не прошли валидацию
     """
-    try:
-        user = await auth_service.create_user_by_admin(user_data, current_user)
-        return user
-    except AlreadyExistsException as e:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=e.message,
-        )
-    except UnauthorizedException as e:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=e.message,
-        )
-    except AppException as e:
-        raise HTTPException(
-            status_code=e.status_code,
-            detail=e.message,
-        )
+
+    return await auth_service.create_user_by_admin(user_data, current_user)
 
 
 @router.post(
@@ -129,22 +99,11 @@ async def login(
         JWT токен для доступа к защищенным endpoints
 
     Raises:
-        HTTPException 401: Если учетные данные неверны
+        UnauthorizedException 401: Если учетные данные неверны
+        AppException 422: Если данные не прошли валидацию
     """
-    try:
-        token = await auth_service.login(login_data)
-        return token
-    except UnauthorizedException as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=e.message,
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    except AppException as e:
-        raise HTTPException(
-            status_code=e.status_code,
-            detail=e.message,
-        )
+
+    return await auth_service.login(login_data)
 
 
 @router.get(
@@ -166,7 +125,7 @@ async def get_me(
         Данные текущего пользователя
 
     Raises:
-        HTTPException 401: Если токен невалиден
+        AppException : Если токен невалиден
     """
     return UserResponse.model_validate(current_user)
 
@@ -195,7 +154,6 @@ async def refresh_token(
         HTTPException 401: Если токен невалиден
     """
     try:
-        from app.core.security import create_access_token
 
         new_token = create_access_token(
             data={
@@ -206,8 +164,8 @@ async def refresh_token(
         )
         return Token(access_token=new_token, token_type="bearer")
     except Exception:
-        raise HTTPException(
+        raise AppException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not refresh token",
-            headers={"WWW-Authenticate": "Bearer"},
+            message="Could not refresh token",
+            detail={"WWW-Authenticate": "Bearer"},
         )
