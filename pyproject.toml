@@ -8,9 +8,10 @@ dependencies = [
     "alembic>=1.17.0",
     "asyncpg>=0.30.0",
     "fastapi>=0.119.0",
-    "passlib[bcrypt]>=1.7.4",
+    "isort>=7.0.0",
+    "passlib[argon2]>=1.7.4",
     "psycopg2-binary>=2.9.11",
-    "pydantic>=2.12.2",
+    "pydantic[email]>=2.12.2",
     "python-jose>=3.5.0",
     "sqlalchemy>=2.0.44",
     "uvicorn>=0.37.0",
@@ -24,6 +25,11 @@ dev = [
     "black==24.10.0",
     "ruff==0.7.0",
     "mypy==1.13.0",
+    "isort>=7.0.0",
+    "pre-commit>=4.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-mock>=3.15.1",
+    "vulture>=2.14",
 ]
 
 [build-system]
@@ -58,11 +64,36 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 
+# ==== isort ====
+[tool.isort]
+profile = "black"
+line_length = 100
+src_paths = ["app"]
+known_first_party = [
+    "app",
+]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+ensure_newline_before_comments = true
+use_parentheses = true
+skip = [".venv/", "migrations", ".history"]
+skip_gitignore = true
+
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "-ra -q --strict-markers"
 testpaths = ["tests"]
 asyncio_mode = "auto"
+
+[tool.vulture]
+exclude = ["*file*.py", "app/appi/v1/"]
+ignore_decorators = ["@app.route", "@require_*"]
+make_whitelist = true
+min_confidence = 60
+paths = ["app", "whitelist.py"]
+sort_by_size = true
+verbose = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]

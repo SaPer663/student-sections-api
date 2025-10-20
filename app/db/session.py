@@ -1,17 +1,16 @@
 from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import (
-    AsyncSession,
     AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
     create_async_engine,
-    async_sessionmaker
 )
 
 from app.core.config import settings
 
-
 engine: AsyncEngine = create_async_engine(
-    settings.database.DATABASE_URL,
+    str(settings.database.database_url_async),
     echo=settings.database.DB_ECHO,
     pool_size=settings.database.DB_POOL_SIZE,
     max_overflow=settings.database.DB_MAX_OVERFLOW,
@@ -30,7 +29,7 @@ async_session_maker = async_sessionmaker(
 )
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
+async def get_db() -> AsyncGenerator[AsyncSession]:
     """Dependency для получения database session."""
 
     async with async_session_maker() as session:
